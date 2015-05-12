@@ -252,8 +252,8 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    printf("%lu, %lu\n", sizeof(void *), sizeof(struct node));
-    //compare_sort(atoi(argv[1]), atoi(argv[2]));
+    //printf("%lu, %lu\n", sizeof(void *), sizeof(struct node));
+    compare_sort(atoi(argv[1]), atoi(argv[2]));
 
     return 0;
 }

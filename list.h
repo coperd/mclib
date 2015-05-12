@@ -319,32 +319,43 @@ void list_insertionsort(struct linked_list *list)
 }
 
 /* 
- * merge two sorted linked lists into one
+ * list_merge - merge two sorted linked lists
+ * @a, @b: the two lists to merge
+ *
+ * Be aware that @a and @b are in unconsistant state after the call
+ *
+ * Time Complexity: O(a && b)
+ * Space Complexity: O(1)
  */
-void list_merge(struct linked_list *list, struct linked_list *list1, 
-        struct linked_list *list2)
+struct linked_list * list_merge(struct linked_list *a, struct linked_list *b)
 {
-    struct node *p = list1->head, *q = list2->head, *prev = NULL;
+    struct linked_list *list = 
+        (struct linked_list *)malloc(sizeof(struct linked_list));
+    struct node *ap = a->head, *bp = b->head, *prev = NULL;
 
-    while (p && q) {
-        if (p->data <= q->data) {
-            prev = p;
-            p = p->next;
-            list_tadd(list, prev);
+    list_init(list);
+
+    while (ap && bp) {
+        if (ap->data <= bp->data) {
+            prev = ap;
+            ap = ap->next;
         } else {
-            prev = q;
-            q = q->next;
-            list_tadd(list, prev);
+            prev = bp;
+            bp = bp->next;
         }
-    }
-    
-    if (NULL == p) p = q;
-
-    while (p) {
-        prev = p;
-        p = p->next;
         list_tadd(list, prev);
     }
+   
+    if (list->tail) {
+        list->tail->next = ap?ap:bp;
+        list->tail = ap?a->tail:b->tail;
+    } else {
+        list->head = ap?:bp;
+        list->tail = ap?a->tail:b->tail;
+    }
+    list->len = a->len + b->len;
+
+    return list;
 }
 
 /*
@@ -386,7 +397,7 @@ void list_mergesort(struct linked_list *list)
     
     list_mergesort(list_fh);
     list_mergesort(list_lh);
-    list_merge(list, list_fh, list_lh);
+    list = list_merge(list_fh, list_lh);
 
     free(list_fh);
     free(list_lh);
