@@ -355,23 +355,28 @@ struct linked_list * list_merge(struct linked_list *a, struct linked_list *b)
     }
     list->len = a->len + b->len;
 
+    list_init(a);
+    list_init(b);
+
     return list;
 }
 
 /*
- * sort the linked list using mergesort() way
+ * list_mergesort - list merge sort
+ * @list: list to sort
+ *
  * Time Complexity: O(nlgn)
- * Space Complexity: O(log n)
+ * Space Complexity: O(lgn)
  */
-void list_mergesort(struct linked_list *list)
+void list_mergesort(struct linked_list **list)
 {
     struct linked_list *list_fh = NULL, *list_lh = NULL;
-    struct node *p = list->head, *prev = NULL;
-    int len = list_length(list);
+    struct node *p = (*list)->head, *prev = NULL;
+    int len = list_length(*list);
     int cnt = 1;
 
     /* return when list is NULL or only has one element */
-    if (NULL == list || list->head == list->tail) return;
+    if (NULL == *list || (*list)->head == (*list)->tail) return;
 
     /* find the mid node pointer */
     for (; cnt <= len/2; cnt++, prev = p, p = p->next);
@@ -383,24 +388,83 @@ void list_mergesort(struct linked_list *list)
     list_init(list_fh);
     list_init(list_lh);
 
-    list_fh->head = list->head;
+    list_fh->head = (*list)->head;
     list_fh->tail = prev;
     prev->next = NULL;
     list_fh->len = cnt - 1;
 
     list_lh->head = p;
-    list_lh->tail = list->tail;
+    list_lh->tail = (*list)->tail;
     list_lh->len = len - cnt + 1;
 
-    list->head = list->tail = NULL;
-    list->len = 0;
+    (*list)->head = (*list)->tail = NULL;
+    (*list)->len = 0;
     
-    list_mergesort(list_fh);
-    list_mergesort(list_lh);
-    list = list_merge(list_fh, list_lh);
+    list_mergesort(&list_fh);
+    list_mergesort(&list_lh);
+    *list = list_merge(list_fh, list_lh);
 
     free(list_fh);
     free(list_lh);
+}
+
+/* list_mergesort2 - merge sort list
+ * @list - list to merge sort
+ *
+ * Time Complexity: O(nlgn)
+ * Space Complexity: O(1)
+ *
+ * Modified from kernel(lib/list_sort.c), 
+ * This alternative implementation scales better, reaching ~3x performance gain 
+ * as list length approaches the L2 cache size
+ */
+void list_mergesort2(struct linked_list **list)
+{
+    int MAX_LIST_LENGTH_BITS = 20;
+    struct linked_list part[MAX_LIST_LENGTH_BITS+1];
+
+    int lev; /* index to part[] */
+    int max_lev = 0;
+    struct node *p;
+
+    if (list_is_empty(*list))
+        return;
+
+    for (lev = 0; lev <= MAX_LIST_LENGTH_BITS; lev++)
+        list_init(&part[lev]);
+
+    struct linked_list *cur = 
+        (struct linked_list *)malloc(sizeof(struct linked_list));
+    list_init(cur);
+    p = (*list)->head;
+    while (p) {
+        cur->head = cur->tail = p;
+        cur->len = 1; 
+        p = p->next;
+
+        (*list)->head = p;
+        if (!p) (*list)->tail = NULL;
+        (*list)->len--;
+
+        cur->tail->next = NULL;
+
+        for (lev = 0; !list_is_empty(&part[lev]); lev++) {
+            cur = list_merge(&part[lev], cur);
+            list_init(&part[lev]);
+        }
+        if (lev > max_lev) {
+            if (lev >= MAX_LIST_LENGTH_BITS) {
+                lev--;
+            }
+            max_lev = lev;
+        }
+        part[lev] = *cur;
+    }
+
+    list_init(*list);
+    for (lev = 0; lev <= max_lev; lev++)
+        if (!list_is_empty(&part[lev]))
+            *list = list_merge(&part[lev], *list);
 }
 
 /*
@@ -539,7 +603,7 @@ void list_rmdup(struct linked_list *list)
     struct node *p = list->head->next, *q = list->head, *r = NULL;
 
     /* sort the list first */
-    list_mergesort(list);
+    list_mergesort(&list);
 
     while (p) {
         if (p->data == q->data) {
@@ -625,17 +689,15 @@ void list_disp(struct linked_list *list)
 {
     struct node *p = list->head;
     while (p) {
-        printf("%4d ", p->data);
+        printf("%d", p->data);
         if (NULL != p->next) {
-            printf("->");
+            printf(" -> ");
         }
 
         p = p->next;
     }
-    printf(", ");
 
     printf("\n");
-
 }
 
 #endif

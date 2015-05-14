@@ -117,7 +117,7 @@ void compare_sort(int n, int nt)
         current_utc_time(&tq2);
 
         current_utc_time(&tm1);
-        list_mergesort(list1);
+        list_mergesort2(&list1);
         current_utc_time(&tm2);
 
         list_destroy(list1);
@@ -242,11 +242,98 @@ void TEST_QUICKSORT()
     printf("%-10s%4d\n", "failed", ncases-nsuccess);
 }
 
+void TEST_MERGESORT()
+{
+    srand((unsigned int)time(0));
+    int ncases = NCASES;
+    int len = N;
+    int idx = 1;
+    struct linked_list *list = 
+        (struct linked_list *)malloc(sizeof(struct linked_list));
+
+    int i = 0, j = 0;
+    int nsuccess = 0;
+    for (i = 0; i < ncases; i++) {
+        list_init(list);
+        for (j = 0; j < len; j++) {
+            struct node *p = (struct node *)malloc(sizeof(struct node));
+            int x = rand() % 10; /* x ~ [0, 100] */
+            p->data = x;
+            p->next = NULL;
+            list_tadd(list, p);
+        }
+
+        printf("Case %d:\n", idx++);
+        printf("\tBefore: ");
+        list_disp(list);
+
+        list_mergesort(&list);
+
+        printf("\tAfter : ");
+        struct node *p = list->head;
+        bool is_sorted = true;
+        while (p) {
+            printf("%d", p->data);
+            if (NULL != p->next) {
+                printf(" -> ");
+                if (p->next->data < p->data)
+                    is_sorted = false;
+            }
+
+            p = p->next;
+        }
+
+        if (is_sorted) {
+            printf(KGRN "\tPASSED\n" RESET);
+            nsuccess++;
+        } else printf(KRED "\tFAILED\n" RESET);
+
+    }
+
+    printf("%-10s%4d\n", "total", ncases);
+    printf("%-10s%4d\n", "succeeded", nsuccess);
+    printf("%-10s%4d\n", "failed", ncases-nsuccess);
+}
+
+void TEST_MERGE()
+{
+    int a[] = {3, 4, 7};
+    int b[] = {1, 4};
+    struct linked_list *la = (struct linked_list *)malloc(sizeof(struct linked_list));
+    list_init(la);
+    struct linked_list lb;
+    list_init(&lb);
+    int i;
+    for (i = 0; i < sizeof(a)/sizeof(a[0]); i++)
+        list_append(la, a[i]);
+    for (i = 0; i < sizeof(b)/sizeof(b[0]); i++)
+        list_append(&lb, b[i]);
+
+    la = list_merge(la, &lb);
+    list_disp(la);
+}
+
+void TEST_MERGESORT_SMALL()
+{
+    int a[] = {6, 2, 3, 1, 7};
+    struct linked_list *la = (struct linked_list *)malloc(sizeof(struct linked_list));
+    list_init(la);
+    int i;
+    for (i = 0; i < sizeof(a)/sizeof(a[0]); i++)
+        list_append(la, a[i]);
+    list_disp(la);
+    list_mergesort2(&la);
+    list_disp(la);
+}
+
 int main(int argc, char **argv)
 {
     //TEST_QUICKSORT();
     //TEST_STACK();
     //TEST_INSERTIONSORT();
+    //TEST_MERGESORT();
+    //TEST_MERGE();
+    //TEST_MERGESORT_SMALL();
     if (argc != 3) {
         fprintf(stderr, "usage: %s <num> <ntimes>\n", argv[0]);
         exit(1);
