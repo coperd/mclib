@@ -52,3 +52,8 @@
     * `list_move()` and `list_move_tail()`
     * `list_splice()`
     * `list_cut_position`
+
+## FreeBSD queue.h ##
+
+  * Tail Queue (double/single linked)
+  * Lists (double/single linked)
