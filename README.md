@@ -56,4 +56,25 @@
 ## FreeBSD queue.h ##
 
   * Tail Queue (double/single linked)
+    - `TAILQ_HEAD`: `(head, qemu_paiocb) request_list`
+    - `TAILQ_INIT`: `(&request_list)`
+
+    - `TAILQ_REMOVE`: `(&request_list, elm, node)`
+    - `TAILQ_INSERT_TAIL`: `(&request_list, elm, node)`
+    - `TAILQ_INSERT_HEAD`: `(&request_list, elm, node)`
+    - `TAILQ_INSERT_BEFORE`: `(listelm, elm, node)`
+    - `TAILQ_INSERT_AFTER`: `(&request_list, listelm, elm, node)`
+
+
+    - `TAILQ_FOREACH`: `(var, &request_list, node)`
+    - `TAILQ_FOREACH_RESERVE`: (var, &request, headname, node)`
+
+    - `TAILQ_EMPTY`: `(&request_list)`
+
+    - `TAILQ_FIRST`: `(&request_list)`
+    - `TAILQ_LAST`: `(&request_list, head)`
+
+    - `TAILQ_NEXT`: `(elm, node)`
+    - `TAILQ_PREV`: `(elm, head, node)`
+
   * Lists (double/single linked)
